@@ -162,6 +162,35 @@ await databaseService.execute(
 | `DATABASE_PATH` | Path to SQLite database file | No (defaults to ./data/bot.db) |
 | `NODE_ENV` | Environment (development/production) | No |
 | `LOG_LEVEL` | Logging level (error/warn/info/debug) | No |
+| `EMAIL` | Email address for notifications | No |
+| `EMAIL_PASSWORD` | Email password for notifications | No |
+
+## 📧 Email Notifications
+
+The bot includes an optional email notification system that sends alerts when:
+
+- **Environment validation fails**: When required Discord bot credentials are missing
+- **Bot startup success**: Confirmation when the bot starts successfully
+
+### Email Configuration
+
+To enable email notifications, add these variables to your `.env` file:
+
+```env
+EMAIL=your_email@example.com
+EMAIL_PASSWORD=your_email_password
+```
+
+The bot uses SMTP with Hostinger's email service:
+- **SMTP Server**: smtp.hostinger.com
+- **Port**: 465 (SSL)
+- **Recipient**: hargunbeersingh@gmail.com
+
+### Email Notifications
+
+- **Failure Notifications**: Sent when the bot fails to start due to missing environment variables
+- **Success Notifications**: Sent when the bot starts successfully
+- **Server Details**: Includes hostname, timestamp, Node.js version, and environment information
 
 ## 📝 Logging
 
