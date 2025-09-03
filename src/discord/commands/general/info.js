@@ -1,6 +1,8 @@
 import { SlashCommandBuilder, EmbedBuilder, version } from 'discord.js';
+
 import logger from '../../../core/logger.js';
 import config from '../../../core/config.js';
+import CommandUtils from '../../../core/commandUtils.js';
 
 /**
  * Info command - displays bot information
@@ -23,9 +25,9 @@ export default {
               `**Servers:** ${client.guilds.cache.size}`,
               `**Users:** ${client.users.cache.size}`,
               `**Commands:** ${client.commands.size}`,
-              `**Uptime:** ${this.formatUptime(client.uptime)}`,
+              `**Uptime:** ${this.formatUptime(client.uptime)}`
             ].join('\n'),
-            inline: true,
+            inline: true
           },
           {
             name: '🔧 Technical Details',
@@ -33,19 +35,19 @@ export default {
               `**Node.js:** ${process.version}`,
               `**Discord.js:** ${version}`,
               `**Environment:** ${config.app.nodeEnv}`,
-              '**Database:** SQLite',
+              '**Database:** SQLite'
             ].join('\n'),
-            inline: true,
+            inline: true
           }
         )
         .setTimestamp()
-        .setFooter({ 
+        .setFooter({
           text: `Requested by ${interaction.user.tag}`,
           iconURL: interaction.user.displayAvatarURL()
         });
 
       await interaction.reply({ embeds: [embed] });
-      logger.info(`Info command executed by ${interaction.user.tag}`);
+      CommandUtils.logCommandExecution('info', interaction);
     } catch (error) {
       logger.error('Error in info command:', error);
       throw error;
@@ -65,5 +67,5 @@ export default {
     if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
     if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
     return `${seconds}s`;
-  },
+  }
 };

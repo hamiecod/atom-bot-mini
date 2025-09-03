@@ -10,7 +10,9 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write src/",
-    "format:check": "prettier --check src/"
+    "format:check": "prettier --check src/",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged"
   },
   "keywords": [
     "discord",
@@ -31,9 +33,17 @@
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
     "prettier": "^3.2.5"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "lint-staged": {
+    "src/**/*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }

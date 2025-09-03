@@ -1,5 +1,6 @@
-import database from './database.js';
 import logger from '../core/logger.js';
+
+import database from './database.js';
 
 /**
  * Service for managing guild settings
@@ -14,7 +15,10 @@ class GuildSettingsService {
   async getGuildSettings(guildId) {
     try {
       if (!guildId) {
-        logger.medium('getGuildSettings called with null/undefined guildId', 'guildSettings');
+        logger.medium(
+          'getGuildSettings called with null/undefined guildId',
+          'guildSettings'
+        );
         return null;
       }
 
@@ -24,13 +28,17 @@ class GuildSettingsService {
       }
 
       const settings = await database.queryOne(
-        `SELECT * FROM guild_settings WHERE guild_id = ?`,
+        'SELECT * FROM guild_settings WHERE guild_id = ?',
         [guildId]
       );
 
       return settings;
     } catch (error) {
-      logger.high('Failed to get guild settings - this affects bot functionality', 'guildSettings', error);
+      logger.high(
+        'Failed to get guild settings - this affects bot functionality',
+        'guildSettings',
+        error
+      );
       throw error;
     }
   }
@@ -49,9 +57,16 @@ class GuildSettingsService {
       }
 
       // Validate setting key
-      const validKeys = ['stats_channel_id', 'leaderboard_channel_id', 'admin_role_id'];
+      const validKeys = [
+        'stats_channel_id',
+        'leaderboard_channel_id',
+        'admin_role_id'
+      ];
       if (!validKeys.includes(settingKey)) {
-        logger.medium(`Invalid setting key attempted: ${settingKey}`, 'guildSettings');
+        logger.medium(
+          `Invalid setting key attempted: ${settingKey}`,
+          'guildSettings'
+        );
         throw new Error(`Invalid setting key: ${settingKey}`);
       }
 
@@ -62,7 +77,7 @@ class GuildSettingsService {
 
       // Check if guild settings exist
       const existingSettings = await this.getGuildSettings(guildId);
-      
+
       if (existingSettings) {
         // Update existing settings
         await database.execute(
@@ -81,16 +96,27 @@ class GuildSettingsService {
         await database.execute(
           `INSERT INTO guild_settings (guild_id, stats_channel_id, leaderboard_channel_id, admin_role_id, updated_at)
            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-          [guildId, settings.stats_channel_id, settings.leaderboard_channel_id, settings.admin_role_id]
+          [
+            guildId,
+            settings.stats_channel_id,
+            settings.leaderboard_channel_id,
+            settings.admin_role_id
+          ]
         );
       }
 
-      logger.info(`Updated guild setting: ${settingKey} = ${settingValue} for guild ${guildId}`);
-      
+      logger.info(
+        `Updated guild setting: ${settingKey} = ${settingValue} for guild ${guildId}`
+      );
+
       // Return updated settings
       return await this.getGuildSettings(guildId);
     } catch (error) {
-      logger.high('Failed to set guild setting - this affects bot configuration', 'guildSettings', error);
+      logger.high(
+        'Failed to set guild setting - this affects bot configuration',
+        'guildSettings',
+        error
+      );
       throw error;
     }
   }
@@ -104,14 +130,21 @@ class GuildSettingsService {
   async getGuildSetting(guildId, settingKey) {
     try {
       if (!guildId || !settingKey) {
-        logger.medium('getGuildSetting called with missing parameters', 'guildSettings');
+        logger.medium(
+          'getGuildSetting called with missing parameters',
+          'guildSettings'
+        );
         return null;
       }
 
       const settings = await this.getGuildSettings(guildId);
       return settings ? settings[settingKey] : null;
     } catch (error) {
-      logger.high('Failed to get specific guild setting - this affects bot functionality', 'guildSettings', error);
+      logger.high(
+        'Failed to get specific guild setting - this affects bot functionality',
+        'guildSettings',
+        error
+      );
       throw error;
     }
   }
@@ -127,42 +160,46 @@ class GuildSettingsService {
   async canUseCommand(guildId, commandName, channelId, userRoles = []) {
     try {
       const settings = await this.getGuildSettings(guildId);
-      
+
       // If no settings exist, command can be used anywhere
       if (!settings) {
         return true;
       }
 
       switch (commandName) {
-        case 'leaderboard':
-          // Check if leaderboard is bound to a specific channel
-          if (settings.leaderboard_channel_id) {
-            return channelId === settings.leaderboard_channel_id;
-          }
-          return true;
+      case 'leaderboard':
+        // Check if leaderboard is bound to a specific channel
+        if (settings.leaderboard_channel_id) {
+          return channelId === settings.leaderboard_channel_id;
+        }
+        return true;
 
-        case 'status':
-          // Check if status is bound to a specific channel
-          if (settings.stats_channel_id) {
-            return channelId === settings.stats_channel_id;
-          }
-          return true;
+      case 'stats':
+        // Check if stats is bound to a specific channel
+        if (settings.stats_channel_id) {
+          return channelId === settings.stats_channel_id;
+        }
+        return true;
 
-        case 'bind':
-        case 'unbind':
-        case 'bindings':
-        case 'cleanup':
-          // Admin commands - check if user has admin role
-          if (settings.admin_role_id) {
-            return userRoles.includes(settings.admin_role_id);
-          }
-          return true;
+      case 'bind':
+      case 'unbind':
+      case 'bindings':
+      case 'cleanup':
+        // Admin commands - check if user has admin role
+        if (settings.admin_role_id) {
+          return userRoles.includes(settings.admin_role_id);
+        }
+        return true;
 
-        default:
-          return true;
+      default:
+        return true;
       }
     } catch (error) {
-      logger.high('Failed to check command permissions - security risk, failing open', 'guildSettings', error);
+      logger.high(
+        'Failed to check command permissions - security risk, failing open',
+        'guildSettings',
+        error
+      );
       // Fail open - allow command if there's an error (security consideration)
       return true;
     }
@@ -177,7 +214,7 @@ class GuildSettingsService {
   async getSettingsHealthStatus(guildId, guild) {
     try {
       const settings = await this.getGuildSettings(guildId);
-      
+
       if (!settings) {
         return {
           hasSettings: false,
@@ -193,7 +230,9 @@ class GuildSettingsService {
 
       // Check leaderboard channel
       if (settings.leaderboard_channel_id) {
-        const channel = guild.channels.cache.get(settings.leaderboard_channel_id);
+        const channel = guild.channels.cache.get(
+          settings.leaderboard_channel_id
+        );
         if (channel) {
           healthy.push({
             type: 'leaderboard_channel',
@@ -256,7 +295,11 @@ class GuildSettingsService {
         brokenCount: broken.length
       };
     } catch (error) {
-      logger.medium('Failed to get settings health status - non-critical but useful for diagnostics', 'guildSettings', error);
+      logger.medium(
+        'Failed to get settings health status - non-critical but useful for diagnostics',
+        'guildSettings',
+        error
+      );
       throw error;
     }
   }

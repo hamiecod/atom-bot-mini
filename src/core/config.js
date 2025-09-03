@@ -1,6 +1,7 @@
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+
+import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
@@ -24,7 +25,7 @@ class Config {
     return {
       token: process.env.DISCORD_TOKEN,
       clientId: process.env.DISCORD_CLIENT_ID,
-      guildId: process.env.DISCORD_GUILD_ID,
+      guildId: process.env.DISCORD_GUILD_ID
     };
   }
 
@@ -33,7 +34,7 @@ class Config {
    */
   get database() {
     return {
-      path: process.env.DATABASE_PATH || './data/bot.db',
+      path: process.env.DATABASE_PATH || './data/bot.db'
     };
   }
 
@@ -45,7 +46,7 @@ class Config {
       nodeEnv: process.env.NODE_ENV || 'development',
       logLevel: process.env.LOG_LEVEL || 'info',
       isDevelopment: process.env.NODE_ENV === 'development',
-      isProduction: process.env.NODE_ENV === 'production',
+      isProduction: process.env.NODE_ENV === 'production'
     };
   }
 
@@ -56,7 +57,9 @@ class Config {
   validateConfig() {
     // Warn about optional but recommended variables
     if (!process.env.DISCORD_GUILD_ID) {
-      console.warn('⚠️  DISCORD_GUILD_ID not set. Bot will register commands globally.');
+      console.warn(
+        '⚠️  DISCORD_GUILD_ID not set. Bot will register commands globally.'
+      );
     }
   }
 

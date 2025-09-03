@@ -171,26 +171,42 @@ The bot includes an optional email notification system that sends alerts when:
 
 - **Environment validation fails**: When required Discord bot credentials are missing
 - **Bot startup success**: Confirmation when the bot starts successfully
+- **Critical errors**: Uncaught exceptions and unhandled promise rejections
+- **Startup failures**: When the bot fails to start due to configuration issues
 
 ### Email Configuration
 
-To enable email notifications, add these variables to your `.env` file:
+To enable email notifications, you can either:
+
+#### Option 1: Use the Setup Script (Recommended)
+```bash
+node setup-email.js
+```
+
+This interactive script will help you configure email settings and create/update your `.env` file.
+
+#### Option 2: Manual Configuration
+Add these variables to your `.env` file:
 
 ```env
 EMAIL=your_email@example.com
 EMAIL_PASSWORD=your_email_password
 ```
 
-The bot uses SMTP with Hostinger's email service:
-- **SMTP Server**: smtp.hostinger.com
-- **Port**: 465 (SSL)
-- **Recipient**: hargunbeersingh@gmail.com
+**Important Notes:**
+- For Gmail, you may need to use an "App Password" instead of your regular password
+- The bot uses SMTP with Hostinger's email service:
+  - **SMTP Server**: smtp.hostinger.com
+  - **Port**: 465 (SSL)
+  - **Recipient**: hargunbeersingh@gmail.com
 
 ### Email Notifications
 
-- **Failure Notifications**: Sent when the bot fails to start due to missing environment variables
-- **Success Notifications**: Sent when the bot starts successfully
-- **Server Details**: Includes hostname, timestamp, Node.js version, and environment information
+- **Environment Validation Failures**: Sent when the bot fails to start due to missing environment variables
+- **Startup Success**: Sent when the bot starts successfully
+- **Critical Errors**: Sent when uncaught exceptions or unhandled promise rejections occur
+- **Startup Failures**: Sent when the bot fails to start due to configuration issues
+- **Server Details**: All notifications include hostname, timestamp, Node.js version, and environment information
 
 ## 📝 Logging
 

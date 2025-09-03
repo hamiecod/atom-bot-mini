@@ -1,4 +1,5 @@
 import { MessageFlags } from 'discord.js';
+
 import logger from '../../core/logger.js';
 
 /**
@@ -24,14 +25,19 @@ export default {
       logger.info(
         `${interaction.user.tag} used /${interaction.commandName} in ${interaction.guild?.name || 'DM'}`
       );
-      
+
       await command.execute(interaction, client);
     } catch (error) {
-      logger.critical(`Critical error executing command ${interaction.commandName} - command system failure`, 'interaction-handler', error);
-      
+      logger.critical(
+        `Critical error executing command ${interaction.commandName} - command system failure`,
+        'interaction-handler',
+        error
+      );
+
       const errorMessage = {
-        content: 'There was a critical error while executing this command! The admin has been notified.',
-        flags: MessageFlags.Ephemeral,
+        content:
+          'There was a critical error while executing this command! The admin has been notified.',
+        flags: MessageFlags.Ephemeral
       };
 
       try {
@@ -41,8 +47,12 @@ export default {
           await interaction.reply(errorMessage);
         }
       } catch (replyError) {
-        logger.critical('Failed to send error response to user - interaction system may be broken', 'interaction-handler', replyError);
+        logger.critical(
+          'Failed to send error response to user - interaction system may be broken',
+          'interaction-handler',
+          replyError
+        );
       }
     }
-  },
+  }
 };

@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+
 import logger from '../core/logger.js';
 
 /**
@@ -20,7 +21,20 @@ class EmailService {
       const password = process.env.EMAIL_PASSWORD;
 
       if (!email || !password) {
-        logger.warn('Email service not configured: EMAIL and EMAIL_PASSWORD not set');
+        logger.warn(
+          'Email service not configured: EMAIL and EMAIL_PASSWORD not set'
+        );
+        logger.info('To enable email notifications:');
+        logger.info('  1. Create a .env file (copy from env.example)');
+        logger.info('  2. Set EMAIL=your_email@example.com');
+        logger.info('  3. Set EMAIL_PASSWORD=your_email_password');
+        return false;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        logger.error(`Invalid email format: ${email}`);
         return false;
       }
 
@@ -30,15 +44,34 @@ class EmailService {
         secure: true, // Use SSL
         auth: {
           user: email,
-          pass: password,
-        },
+          pass: password
+        }
       });
 
       this.isConfigured = true;
-      logger.info('Email service initialized successfully');
+      logger.info(`Email service initialized successfully with ${email}`);
       return true;
     } catch (error) {
       logger.error('Failed to initialize email service:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Test email connection
+   */
+  async testConnection() {
+    if (!this.isConfigured || !this.transporter) {
+      logger.warn('Email service not configured, cannot test connection');
+      return false;
+    }
+
+    try {
+      await this.transporter.verify();
+      logger.info('Email connection test successful');
+      return true;
+    } catch (error) {
+      logger.error('Email connection test failed:', error);
       return false;
     }
   }
@@ -57,7 +90,7 @@ class EmailService {
         from: process.env.EMAIL,
         to: 'hargunbeersingh@gmail.com',
         subject: subject,
-        [isHtml ? 'html' : 'text']: message,
+        [isHtml ? 'html' : 'text']: message
       };
 
       const info = await this.transporter.sendMail(mailOptions);
@@ -74,7 +107,7 @@ class EmailService {
    */
   async sendEnvValidationFailure(missingVariables) {
     const subject = '🚨 Atom Bot - Environment Variables Missing';
-    
+
     const message = `
 Atom Bot failed to start due to missing environment variables.
 
@@ -102,64 +135,58 @@ This is an automated notification from Atom Bot.
     return await this.sendNotification(subject, message);
   }
 
+
+
   /**
-   * Send bot startup success notification
-   * NOTE: This method is kept for compatibility but notifications are disabled
-   * Email notifications are only sent for Discord credential validation failures
+   * Send startup notification
    */
-  async sendStartupSuccess() {
-    // Email notifications are only sent for Discord credential validation failures
-    // Startup success notifications are disabled to reduce email spam
-    logger.info('Startup success notification disabled - email notifications only sent for Discord credential failures');
-    return false;
+  async sendStartupNotification() {
+    const subject = '🚀 Atom Bot - Started Successfully';
+    
+    const message = `
+Atom Bot has started successfully!
+
+Server Details:
+- Host: ${process.env.HOSTNAME || 'Unknown'}
+- Time: ${new Date().toISOString()}
+- Node.js Version: ${process.version}
+- Environment: ${process.env.NODE_ENV || 'development'}
+- Email Service: ${this.isConfigured ? 'Configured' : 'Not configured'}
+
+Bot is now online and ready to serve Discord commands.
+
+This is an automated notification from Atom Bot.
+    `.trim();
+
+    return await this.sendNotification(subject, message);
   }
 
   /**
    * Send critical error notification
-   * NOTE: This method is kept for compatibility but notifications are disabled
-   * Email notifications are only sent for Discord credential validation failures
    */
-  async sendCriticalErrorNotification(errorMessage, context, errorDetails) {
-    // Email notifications are only sent for Discord credential validation failures
-    // Critical error notifications are disabled to reduce email spam
-    logger.info('Critical error notification disabled - email notifications only sent for Discord credential failures');
-    return false;
-  }
+  async sendCriticalErrorNotification(error, context = 'unknown') {
+    const subject = '🚨 Atom Bot - Critical Error';
+    
+    const message = `
+A critical error has occurred in Atom Bot!
 
-  /**
-   * Send high priority error notification
-   * NOTE: This method is kept for compatibility but notifications are disabled
-   * Email notifications are only sent for Discord credential validation failures
-   */
-  async sendHighPriorityErrorNotification(errorMessage, context, errorDetails) {
-    // Email notifications are only sent for Discord credential validation failures
-    // High priority error notifications are disabled to reduce email spam
-    logger.info('High priority error notification disabled - email notifications only sent for Discord credential failures');
-    return false;
-  }
+Error Details:
+- Context: ${context}
+- Time: ${new Date().toISOString()}
+- Error: ${error.message || error}
+- Stack: ${error.stack || 'No stack trace available'}
 
-  /**
-   * Send service failure notification
-   * NOTE: This method is kept for compatibility but notifications are disabled
-   * Email notifications are only sent for Discord credential validation failures
-   */
-  async sendServiceFailureNotification(serviceName, errorMessage, errorDetails) {
-    // Email notifications are only sent for Discord credential validation failures
-    // Service failure notifications are disabled to reduce email spam
-    logger.info('Service failure notification disabled - email notifications only sent for Discord credential failures');
-    return false;
-  }
+Server Details:
+- Host: ${process.env.HOSTNAME || 'Unknown'}
+- Node.js Version: ${process.version}
+- Environment: ${process.env.NODE_ENV || 'development'}
 
-  /**
-   * Send database error notification
-   * NOTE: This method is kept for compatibility but notifications are disabled
-   * Email notifications are only sent for Discord credential validation failures
-   */
-  async sendDatabaseErrorNotification(operation, errorMessage, errorDetails) {
-    // Email notifications are only sent for Discord credential validation failures
-    // Database error notifications are disabled to reduce email spam
-    logger.info('Database error notification disabled - email notifications only sent for Discord credential failures');
-    return false;
+Please investigate this issue immediately.
+
+This is an automated notification from Atom Bot.
+    `.trim();
+
+    return await this.sendNotification(subject, message);
   }
 
   /**

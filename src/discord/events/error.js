@@ -7,6 +7,10 @@ import logger from '../../core/logger.js';
 export default {
   name: 'error',
   async execute(error, _client) {
-    logger.critical('Discord client error - bot connectivity issue', 'discord-client', error);
-  },
+    logger.critical(
+      'Discord client error - bot connectivity issue',
+      'discord-client',
+      error
+    );
+  }
 };

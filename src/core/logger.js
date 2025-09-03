@@ -10,9 +10,9 @@ class Logger {
       error: 0,
       warn: 1,
       info: 2,
-      debug: 3,
+      debug: 3
     };
-    
+
     this.currentLevel = this.levels[process.env.LOG_LEVEL || 'info'];
     this.errorCounts = new Map(); // Track error frequency
     this.lastAdminNotification = new Map(); // Prevent spam
@@ -32,7 +32,7 @@ class Logger {
     if (this.currentLevel >= this.levels.error) {
       const timestamp = new Date().toISOString();
       console.error(`[ERROR] ${timestamp} - ${message}`, ...args);
-      
+
       // Handle admin notifications for critical errors only (max priority)
       if (options.notifyAdmin || options.severity === 'critical') {
         this.handleAdminNotification(message, options, timestamp);
@@ -63,7 +63,10 @@ class Logger {
    */
   debug(message, ...args) {
     if (this.currentLevel >= this.levels.debug) {
-      console.debug(`[DEBUG] ${new Date().toISOString()} - ${message}`, ...args);
+      console.debug(
+        `[DEBUG] ${new Date().toISOString()} - ${message}`,
+        ...args
+      );
     }
   }
 
@@ -71,7 +74,10 @@ class Logger {
    * Log with a custom prefix
    */
   log(prefix, message, ...args) {
-    console.log(`[${prefix}] ${new Date().toISOString()} - ${message}`, ...args);
+    console.log(
+      `[${prefix}] ${new Date().toISOString()} - ${message}`,
+      ...args
+    );
   }
 
   /**
@@ -82,42 +88,59 @@ class Logger {
     try {
       const errorKey = this.getErrorKey(message, options);
       const now = Date.now();
-      
+
       // Check cooldown to prevent spam
       const lastNotification = this.lastAdminNotification.get(errorKey) || 0;
       if (now - lastNotification < this.adminNotificationCooldown) {
         return;
       }
-      
+
       // Track error frequency
       const errorCount = (this.errorCounts.get(errorKey) || 0) + 1;
       this.errorCounts.set(errorKey, errorCount);
       this.lastAdminNotification.set(errorKey, now);
-      
+
       // Only send email notifications for Discord credential validation failures
-      const isDiscordCredentialError = this.isDiscordCredentialError(message, options);
-      
+      const isDiscordCredentialError = this.isDiscordCredentialError(
+        message,
+        options
+      );
+
       if (isDiscordCredentialError) {
         // Initialize email service if not already done
         if (!emailService.isEmailConfigured()) {
           emailService.initialize();
         }
-        
+
         if (emailService.isEmailConfigured()) {
           const subject = `🚨 Atom Bot - ${options.severity?.toUpperCase() || 'ERROR'} Alert`;
-          const emailMessage = this.formatAdminNotificationEmail(message, options, timestamp, errorCount);
-          
+          const emailMessage = this.formatAdminNotificationEmail(
+            message,
+            options,
+            timestamp,
+            errorCount
+          );
+
           await emailService.sendNotification(subject, emailMessage);
-          console.log(`[ADMIN-NOTIFY] ${timestamp} - Admin notification sent for Discord credential error: ${message}`);
+          console.log(
+            `[ADMIN-NOTIFY] ${timestamp} - Admin notification sent for Discord credential error: ${message}`
+          );
         } else {
-          console.warn(`[ADMIN-NOTIFY] ${timestamp} - Email service not configured, cannot send admin notification for: ${message}`);
+          console.warn(
+            `[ADMIN-NOTIFY] ${timestamp} - Email service not configured, cannot send admin notification for: ${message}`
+          );
         }
       } else {
         // Log that admin notification was triggered but email was not sent (not Discord credential error)
-        console.log(`[ADMIN-NOTIFY] ${timestamp} - Admin notification triggered for: ${message} (email not sent - not Discord credential error)`);
+        console.log(
+          `[ADMIN-NOTIFY] ${timestamp} - Admin notification triggered for: ${message} (email not sent - not Discord credential error)`
+        );
       }
     } catch (error) {
-      console.error(`[ADMIN-NOTIFY-ERROR] ${timestamp} - Failed to send admin notification:`, error);
+      console.error(
+        `[ADMIN-NOTIFY-ERROR] ${timestamp} - Failed to send admin notification:`,
+        error
+      );
     }
   }
 
@@ -138,7 +161,7 @@ class Logger {
   isDiscordCredentialError(message, options) {
     const context = options.context || '';
     const messageLower = message.toLowerCase();
-    
+
     // Check for Discord credential related keywords
     const discordCredentialKeywords = [
       'discord_token',
@@ -152,17 +175,18 @@ class Logger {
       'discord bot token',
       'discord application client id'
     ];
-    
+
     // Check if message contains Discord credential keywords
-    const hasDiscordKeywords = discordCredentialKeywords.some(keyword => 
+    const hasDiscordKeywords = discordCredentialKeywords.some(keyword =>
       messageLower.includes(keyword.toLowerCase())
     );
-    
+
     // Check if context indicates environment validation
-    const isEnvironmentContext = context.toLowerCase().includes('environment') || 
-                                context.toLowerCase().includes('validation') ||
-                                context.toLowerCase().includes('startup');
-    
+    const isEnvironmentContext =
+      context.toLowerCase().includes('environment') ||
+      context.toLowerCase().includes('validation') ||
+      context.toLowerCase().includes('startup');
+
     return hasDiscordKeywords || isEnvironmentContext;
   }
 
@@ -173,8 +197,10 @@ class Logger {
   formatAdminNotificationEmail(message, options, timestamp, errorCount) {
     const severity = options.severity || 'medium';
     const context = options.context || 'Unknown';
-    const errorDetails = options.error ? `\n\nError Details:\n${options.error.stack || options.error.message}` : '';
-    
+    const errorDetails = options.error
+      ? `\n\nError Details:\n${options.error.stack || options.error.message}`
+      : '';
+
     return `
 🚨 CRITICAL ERROR ALERT - Atom Bot
 
@@ -242,13 +268,7 @@ If this error persists, please investigate immediately.
     });
   }
 
-  /**
-   * Reset error tracking (useful for testing or maintenance)
-   */
-  resetErrorTracking() {
-    this.errorCounts.clear();
-    this.lastAdminNotification.clear();
-  }
+
 }
 
 // Export singleton instance

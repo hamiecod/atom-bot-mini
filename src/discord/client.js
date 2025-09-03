@@ -1,4 +1,5 @@
 import { Client, GatewayIntentBits, Collection } from 'discord.js';
+
 import config from '../core/config.js';
 import logger from '../core/logger.js';
 
@@ -11,8 +12,8 @@ class BotClient extends Client {
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-      ],
+        GatewayIntentBits.MessageContent
+      ]
     });
 
     // Collections for commands and events
@@ -60,25 +61,25 @@ class BotClient extends Client {
       const __dirname = dirname(__filename);
       const eventsPath = join(__dirname, 'events');
 
-      const eventFiles = readdirSync(eventsPath).filter(file => 
+      const eventFiles = readdirSync(eventsPath).filter(file =>
         file.endsWith('.js')
       );
 
       for (const file of eventFiles) {
         const filePath = join(eventsPath, file);
         const event = await import(filePath);
-        
+
         if (event.default && event.default.name && event.default.execute) {
           if (event.default.once) {
-            this.once(event.default.name, (...args) => 
+            this.once(event.default.name, (...args) =>
               event.default.execute(...args, this)
             );
           } else {
-            this.on(event.default.name, (...args) => 
+            this.on(event.default.name, (...args) =>
               event.default.execute(...args, this)
             );
           }
-          
+
           this.events.set(event.default.name, event.default);
           this.logger.debug(`Loaded event: ${event.default.name}`);
         } else {
@@ -112,19 +113,25 @@ class BotClient extends Client {
 
       for (const folder of commandFolders) {
         const folderPath = join(commandsPath, folder);
-        const commandFiles = readdirSync(folderPath).filter(file => 
+        const commandFiles = readdirSync(folderPath).filter(file =>
           file.endsWith('.js')
         );
 
         for (const file of commandFiles) {
           const filePath = join(folderPath, file);
           const command = await import(filePath);
-          
-          if (command.default && command.default.data && command.default.execute) {
+
+          if (
+            command.default &&
+            command.default.data &&
+            command.default.execute
+          ) {
             this.commands.set(command.default.data.name, command.default);
             this.logger.debug(`Loaded command: ${command.default.data.name}`);
           } else {
-            this.logger.warn(`Command file ${file} is missing required properties`);
+            this.logger.warn(
+              `Command file ${file} is missing required properties`
+            );
           }
         }
       }
@@ -142,14 +149,16 @@ class BotClient extends Client {
   async registerCommands() {
     try {
       const { REST, Routes } = await import('discord.js');
-      
-      const commands = Array.from(this.commands.values()).map(command => 
+
+      const commands = Array.from(this.commands.values()).map(command =>
         command.data.toJSON()
       );
 
       const rest = new REST().setToken(this.config.discord.token);
 
-      this.logger.info(`Started refreshing ${commands.length} application (/) commands.`);
+      this.logger.info(
+        `Started refreshing ${commands.length} application (/) commands.`
+      );
 
       let data;
       if (this.config.discord.guildId) {
@@ -161,14 +170,18 @@ class BotClient extends Client {
           ),
           { body: commands }
         );
-        this.logger.info(`Successfully reloaded ${data.length} guild application (/) commands.`);
+        this.logger.info(
+          `Successfully reloaded ${data.length} guild application (/) commands.`
+        );
       } else {
         // Register commands globally (takes up to 1 hour to propagate)
         data = await rest.put(
           Routes.applicationCommands(this.config.discord.clientId),
           { body: commands }
         );
-        this.logger.info(`Successfully reloaded ${data.length} global application (/) commands.`);
+        this.logger.info(
+          `Successfully reloaded ${data.length} global application (/) commands.`
+        );
       }
     } catch (error) {
       this.logger.error('Failed to register commands:', error);

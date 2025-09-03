@@ -1,6 +1,7 @@
-import logger from './logger.js';
 import database from '../services/database.js';
 import emailService from '../services/email.js';
+
+import logger from './logger.js';
 import errorHandler from './errorHandler.js';
 
 /**
@@ -60,7 +61,10 @@ class HealthMonitor {
         };
 
         // Check for critical issues
-        if (result.status === 'critical' || (check.critical && result.status !== 'healthy')) {
+        if (
+          result.status === 'critical' ||
+          (check.critical && result.status !== 'healthy')
+        ) {
           results.criticalIssues.push({
             check: name,
             message: result.message,
@@ -81,8 +85,8 @@ class HealthMonitor {
         // Update check tracking
         check.lastCheck = new Date();
         check.lastResult = result;
-        check.consecutiveFailures = result.status === 'healthy' ? 0 : check.consecutiveFailures + 1;
-
+        check.consecutiveFailures =
+          result.status === 'healthy' ? 0 : check.consecutiveFailures + 1;
       } catch (error) {
         logger.high(`Health check ${name} failed`, 'health-monitor', error);
         results.checks[name] = {
@@ -103,25 +107,7 @@ class HealthMonitor {
     return results;
   }
 
-  /**
-   * Get system health status
-   */
-  async getSystemHealth() {
-    const health = {
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      cpu: process.cpuUsage(),
-      nodeVersion: process.version,
-      platform: process.platform,
-      arch: process.arch
-    };
 
-    // Calculate memory usage percentage
-    health.memoryUsagePercent = health.memory.heapUsed / health.memory.heapTotal;
-
-    return health;
-  }
 
   /**
    * Check database health
@@ -131,12 +117,14 @@ class HealthMonitor {
     try {
       // Test basic database connectivity
       await database.queryOne('SELECT 1 as test');
-      
+
       // Test guild settings table
-      await database.query('SELECT COUNT(*) as count FROM guild_settings LIMIT 1');
-      
+      await database.query(
+        'SELECT COUNT(*) as count FROM guild_settings LIMIT 1'
+      );
+
       const responseTime = Date.now() - startTime;
-      
+
       return {
         status: responseTime > 1000 ? 'warning' : 'healthy',
         message: `Database responding in ${responseTime}ms`,
@@ -198,7 +186,7 @@ class HealthMonitor {
   async checkEmailHealth() {
     try {
       const isConfigured = emailService.isEmailConfigured();
-      
+
       if (!isConfigured) {
         return {
           status: 'warning',
@@ -228,10 +216,10 @@ class HealthMonitor {
     try {
       const errorStats = errorHandler.getErrorStats();
       const totalErrors = errorStats.totalErrors;
-      
+
       // Simple error rate calculation (errors in last hour)
       const errorRate = totalErrors; // This is a simplified calculation
-      
+
       if (errorRate > this.criticalThresholds.errorRate) {
         return {
           status: 'critical',
@@ -260,44 +248,42 @@ class HealthMonitor {
     }
   }
 
-  /**
-   * Send health report via email
-   * NOTE: This method is kept for compatibility but notifications are disabled
-   * Email notifications are only sent for Discord credential validation failures
-   */
-  async sendHealthReport(healthResults) {
-    // Email notifications are only sent for Discord credential validation failures
-    // Health report notifications are disabled to reduce email spam
-    logger.info('Health report notification disabled - email notifications only sent for Discord credential failures');
-    return false;
-  }
+
 
   /**
    * Initialize health monitoring
    */
   async initialize(client) {
     // Register default health checks
-    this.registerHealthCheck('database', () => this.checkDatabaseHealth(), { critical: true });
-    this.registerHealthCheck('discord', () => this.checkDiscordHealth(client), { critical: true });
-    this.registerHealthCheck('email', () => this.checkEmailHealth(), { critical: false });
-    this.registerHealthCheck('error-rates', () => this.checkErrorRates(), { critical: true });
+    this.registerHealthCheck('database', () => this.checkDatabaseHealth(), {
+      critical: true
+    });
+    this.registerHealthCheck('discord', () => this.checkDiscordHealth(client), {
+      critical: true
+    });
+    this.registerHealthCheck('email', () => this.checkEmailHealth(), {
+      critical: false
+    });
+    this.registerHealthCheck('error-rates', () => this.checkErrorRates(), {
+      critical: true
+    });
 
     // Run initial health check
     await this.runHealthChecks();
 
     // Set up periodic health monitoring
-    setInterval(async () => {
+    setInterval(async() => {
       try {
         const healthResults = await this.runHealthChecks();
-        
-        // Send health report if there are critical issues
-        if (healthResults.overall === 'critical') {
-          await this.sendHealthReport(healthResults);
-        }
-        
+
+        // Health report notifications are disabled to reduce email spam
+
         // Log health status
         if (healthResults.overall !== 'healthy') {
-          logger.warn(`Health check completed: ${healthResults.overall}`, healthResults);
+          logger.warn(
+            `Health check completed: ${healthResults.overall}`,
+            healthResults
+          );
         }
       } catch (error) {
         logger.critical('Health monitoring failed', 'health-monitor', error);
@@ -307,12 +293,7 @@ class HealthMonitor {
     logger.info('Health monitoring initialized');
   }
 
-  /**
-   * Get current health status
-   */
-  getCurrentHealth() {
-    return this.lastHealthReport;
-  }
+
 }
 
 // Export singleton instance
