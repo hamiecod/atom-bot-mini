@@ -51,22 +51,9 @@ class Config {
 
   /**
    * Validate that all required configuration is present
+   * Note: Main validation is done in index.js for better error messages
    */
   validateConfig() {
-    const required = [
-      'DISCORD_TOKEN',
-      'DISCORD_CLIENT_ID',
-    ];
-
-    const missing = required.filter(key => !process.env[key]);
-
-    if (missing.length > 0) {
-      throw new Error(
-        `Missing required environment variables: ${missing.join(', ')}\n` +
-        'Please check your .env file or environment configuration.'
-      );
-    }
-
     // Warn about optional but recommended variables
     if (!process.env.DISCORD_GUILD_ID) {
       console.warn('⚠️  DISCORD_GUILD_ID not set. Bot will register commands globally.');

@@ -6,7 +6,7 @@ import logger from '../../../core/logger.js';
  */
 export default {
   data: new SlashCommandBuilder()
-    .setName('ping')
+    .setName('ping-stats')
     .setDescription('Replies with Pong! and shows bot latency'),
 
   async execute(interaction, client) {
