@@ -1,12 +1,13 @@
 import BotClient from './discord/client.js';
 import databaseService from './services/database.js';
+import emailService from './services/email.js';
 import config from './core/config.js';
 import logger from './core/logger.js';
 
 /**
  * Validate environment variables before starting
  */
-function validateEnvironment() {
+async function validateEnvironment() {
   logger.info('Validating environment configuration...');
   
   const required = [
@@ -34,6 +35,21 @@ function validateEnvironment() {
     logger.error('  DATABASE_PATH - Path to SQLite database file (defaults to ./data/bot.db)');
     logger.error('  NODE_ENV - Environment (development/production)');
     logger.error('  LOG_LEVEL - Logging level (error/warn/info/debug)');
+    logger.error('  EMAIL - Email address for notifications');
+    logger.error('  EMAIL_PASSWORD - Email password for notifications');
+    
+    // Try to send email notification
+    try {
+      emailService.initialize();
+      if (emailService.isEmailConfigured()) {
+        logger.info('📧 Sending email notification about missing environment variables...');
+        await emailService.sendEnvValidationFailure(missing);
+      } else {
+        logger.warn('📧 Email service not configured, skipping notification');
+      }
+    } catch (error) {
+      logger.error('Failed to send email notification:', error);
+    }
     
     process.exit(1);
   }
@@ -62,7 +78,7 @@ async function main() {
     logger.info('Starting Atom Bot...');
     
     // Validate environment variables first
-    validateEnvironment();
+    await validateEnvironment();
     
     logger.info(`Environment: ${config.app.nodeEnv}`);
 
@@ -99,6 +115,17 @@ async function main() {
     });
 
     logger.info('Atom Bot started successfully!');
+    
+    // Send startup success notification
+    try {
+      emailService.initialize();
+      if (emailService.isEmailConfigured()) {
+        logger.info('📧 Sending startup success notification...');
+        await emailService.sendStartupSuccess();
+      }
+    } catch (error) {
+      logger.error('Failed to send startup notification:', error);
+    }
   } catch (error) {
     logger.error('Failed to start Atom Bot:', error);
     process.exit(1);
