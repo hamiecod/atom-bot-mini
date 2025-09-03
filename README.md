@@ -2,7 +2,7 @@
 
 A modular Discord.js bot built with clean architecture principles, featuring SQLite database integration and comprehensive error handling.
 
-## 🏗️ Architecture
+## Architecture Spec
 
 The bot follows a clean, modular architecture with clear separation of concerns:
 
@@ -18,7 +18,7 @@ src/
 └── index.js        # Application entry point
 ```
 
-## 🚀 Features
+## Features
 
 - **Modular Architecture**: Clean separation of concerns with organized file structure
 - **SQLite Database**: Persistent data storage with automatic migrations

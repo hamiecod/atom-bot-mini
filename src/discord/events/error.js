@@ -6,7 +6,7 @@ import logger from '../../core/logger.js';
  */
 export default {
   name: 'error',
-  async execute(error, client) {
+  async execute(error, _client) {
     logger.error('Discord client error:', error);
   },
 };

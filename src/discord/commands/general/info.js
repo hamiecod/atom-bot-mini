@@ -33,7 +33,7 @@ export default {
               `**Node.js:** ${process.version}`,
               `**Discord.js:** ${require('discord.js').version}`,
               `**Environment:** ${config.app.nodeEnv}`,
-              `**Database:** SQLite`,
+              '**Database:** SQLite',
             ].join('\n'),
             inline: true,
           }

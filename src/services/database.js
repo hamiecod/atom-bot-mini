@@ -1,12 +1,8 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { join } from 'path';
 import config from '../core/config.js';
 import logger from '../core/logger.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * Database service for SQLite operations

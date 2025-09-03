@@ -20,7 +20,7 @@ export default {
       const websocketHeartbeat = client.ws.ping;
 
       await interaction.editReply(
-        `🏓 Pong!\n` +
+        '🏓 Pong!\n' +
         `📡 Roundtrip latency: ${roundtripLatency}ms\n` +
         `💓 WebSocket heartbeat: ${websocketHeartbeat}ms`
       );
