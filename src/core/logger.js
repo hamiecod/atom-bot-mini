@@ -33,8 +33,8 @@ class Logger {
       const timestamp = new Date().toISOString();
       console.error(`[ERROR] ${timestamp} - ${message}`, ...args);
       
-      // Handle admin notifications for critical errors
-      if (options.notifyAdmin || options.severity === 'critical' || options.severity === 'high') {
+      // Handle admin notifications for critical errors only (max priority)
+      if (options.notifyAdmin || options.severity === 'critical') {
         this.handleAdminNotification(message, options, timestamp);
       }
     }
@@ -94,19 +94,27 @@ class Logger {
       this.errorCounts.set(errorKey, errorCount);
       this.lastAdminNotification.set(errorKey, now);
       
-      // Initialize email service if not already done
-      if (!emailService.isEmailConfigured()) {
-        emailService.initialize();
-      }
+      // Only send email notifications for Discord credential validation failures
+      const isDiscordCredentialError = this.isDiscordCredentialError(message, options);
       
-      if (emailService.isEmailConfigured()) {
-        const subject = `🚨 Atom Bot - ${options.severity?.toUpperCase() || 'ERROR'} Alert`;
-        const emailMessage = this.formatAdminNotificationEmail(message, options, timestamp, errorCount);
+      if (isDiscordCredentialError) {
+        // Initialize email service if not already done
+        if (!emailService.isEmailConfigured()) {
+          emailService.initialize();
+        }
         
-        await emailService.sendNotification(subject, emailMessage);
-        console.log(`[ADMIN-NOTIFY] ${timestamp} - Admin notification sent for: ${message}`);
+        if (emailService.isEmailConfigured()) {
+          const subject = `🚨 Atom Bot - ${options.severity?.toUpperCase() || 'ERROR'} Alert`;
+          const emailMessage = this.formatAdminNotificationEmail(message, options, timestamp, errorCount);
+          
+          await emailService.sendNotification(subject, emailMessage);
+          console.log(`[ADMIN-NOTIFY] ${timestamp} - Admin notification sent for Discord credential error: ${message}`);
+        } else {
+          console.warn(`[ADMIN-NOTIFY] ${timestamp} - Email service not configured, cannot send admin notification for: ${message}`);
+        }
       } else {
-        console.warn(`[ADMIN-NOTIFY] ${timestamp} - Email service not configured, cannot send admin notification for: ${message}`);
+        // Log that admin notification was triggered but email was not sent (not Discord credential error)
+        console.log(`[ADMIN-NOTIFY] ${timestamp} - Admin notification triggered for: ${message} (email not sent - not Discord credential error)`);
       }
     } catch (error) {
       console.error(`[ADMIN-NOTIFY-ERROR] ${timestamp} - Failed to send admin notification:`, error);
@@ -121,6 +129,41 @@ class Logger {
     const context = options.context || 'general';
     const severity = options.severity || 'medium';
     return `${context}:${severity}:${message.substring(0, 50)}`;
+  }
+
+  /**
+   * Check if an error is related to Discord credential validation
+   * @private
+   */
+  isDiscordCredentialError(message, options) {
+    const context = options.context || '';
+    const messageLower = message.toLowerCase();
+    
+    // Check for Discord credential related keywords
+    const discordCredentialKeywords = [
+      'discord_token',
+      'discord_client_id',
+      'discord token',
+      'discord client id',
+      'missing required environment variables',
+      'environment variables missing',
+      'invalid discord_token format',
+      'invalid discord_client_id format',
+      'discord bot token',
+      'discord application client id'
+    ];
+    
+    // Check if message contains Discord credential keywords
+    const hasDiscordKeywords = discordCredentialKeywords.some(keyword => 
+      messageLower.includes(keyword.toLowerCase())
+    );
+    
+    // Check if context indicates environment validation
+    const isEnvironmentContext = context.toLowerCase().includes('environment') || 
+                                context.toLowerCase().includes('validation') ||
+                                context.toLowerCase().includes('startup');
+    
+    return hasDiscordKeywords || isEnvironmentContext;
   }
 
   /**
@@ -173,8 +216,7 @@ If this error persists, please investigate immediately.
     this.error(message, {
       severity: 'high',
       context,
-      error,
-      notifyAdmin: true
+      error
     });
   }
 

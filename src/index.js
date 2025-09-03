@@ -121,16 +121,8 @@ async function main() {
 
     logger.info('Atom Bot started successfully!');
     
-    // Send startup success notification
-    try {
-      emailService.initialize();
-      if (emailService.isEmailConfigured()) {
-        logger.info('📧 Sending startup success notification...');
-        await emailService.sendStartupSuccess();
-      }
-    } catch (error) {
-      logger.error('Failed to send startup notification:', error);
-    }
+    // Startup success notifications are disabled to reduce email spam
+    // Email notifications are only sent for Discord credential validation failures
   } catch (error) {
     logger.critical('Failed to start Atom Bot - startup failure', 'startup', error);
     process.exit(1);

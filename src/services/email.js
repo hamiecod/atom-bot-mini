@@ -104,145 +104,62 @@ This is an automated notification from Atom Bot.
 
   /**
    * Send bot startup success notification
+   * NOTE: This method is kept for compatibility but notifications are disabled
+   * Email notifications are only sent for Discord credential validation failures
    */
   async sendStartupSuccess() {
-    const subject = '✅ Atom Bot - Started Successfully';
-    
-    const message = `
-Atom Bot has started successfully!
-
-Server Details:
-- Host: ${process.env.HOSTNAME || 'Unknown'}
-- Time: ${new Date().toISOString()}
-- Node.js Version: ${process.version}
-- Environment: ${process.env.NODE_ENV || 'development'}
-
-Bot is now online and ready to handle commands.
-
-This is an automated notification from Atom Bot.
-    `.trim();
-
-    return await this.sendNotification(subject, message);
+    // Email notifications are only sent for Discord credential validation failures
+    // Startup success notifications are disabled to reduce email spam
+    logger.info('Startup success notification disabled - email notifications only sent for Discord credential failures');
+    return false;
   }
 
   /**
    * Send critical error notification
+   * NOTE: This method is kept for compatibility but notifications are disabled
+   * Email notifications are only sent for Discord credential validation failures
    */
   async sendCriticalErrorNotification(errorMessage, context, errorDetails) {
-    const subject = '🚨 Atom Bot - Critical Error Alert';
-    
-    const message = `
-CRITICAL ERROR DETECTED - Atom Bot
-
-Error: ${errorMessage}
-Context: ${context}
-Time: ${new Date().toISOString()}
-
-Server Details:
-- Host: ${process.env.HOSTNAME || 'Unknown'}
-- Environment: ${process.env.NODE_ENV || 'development'}
-- Node.js Version: ${process.version}
-- Bot Uptime: ${process.uptime()} seconds
-
-Error Details:
-${errorDetails}
-
-This requires immediate attention. Please investigate and resolve as soon as possible.
-
-This is an automated notification from Atom Bot.
-    `.trim();
-
-    return await this.sendNotification(subject, message);
+    // Email notifications are only sent for Discord credential validation failures
+    // Critical error notifications are disabled to reduce email spam
+    logger.info('Critical error notification disabled - email notifications only sent for Discord credential failures');
+    return false;
   }
 
   /**
    * Send high priority error notification
+   * NOTE: This method is kept for compatibility but notifications are disabled
+   * Email notifications are only sent for Discord credential validation failures
    */
   async sendHighPriorityErrorNotification(errorMessage, context, errorDetails) {
-    const subject = '⚠️ Atom Bot - High Priority Error';
-    
-    const message = `
-HIGH PRIORITY ERROR - Atom Bot
-
-Error: ${errorMessage}
-Context: ${context}
-Time: ${new Date().toISOString()}
-
-Server Details:
-- Host: ${process.env.HOSTNAME || 'Unknown'}
-- Environment: ${process.env.NODE_ENV || 'development'}
-- Node.js Version: ${process.version}
-- Bot Uptime: ${process.uptime()} seconds
-
-Error Details:
-${errorDetails}
-
-This error should be monitored and addressed when possible.
-
-This is an automated notification from Atom Bot.
-    `.trim();
-
-    return await this.sendNotification(subject, message);
+    // Email notifications are only sent for Discord credential validation failures
+    // High priority error notifications are disabled to reduce email spam
+    logger.info('High priority error notification disabled - email notifications only sent for Discord credential failures');
+    return false;
   }
 
   /**
    * Send service failure notification
+   * NOTE: This method is kept for compatibility but notifications are disabled
+   * Email notifications are only sent for Discord credential validation failures
    */
   async sendServiceFailureNotification(serviceName, errorMessage, errorDetails) {
-    const subject = `🔧 Atom Bot - ${serviceName} Service Failure`;
-    
-    const message = `
-SERVICE FAILURE - Atom Bot
-
-Service: ${serviceName}
-Error: ${errorMessage}
-Time: ${new Date().toISOString()}
-
-Server Details:
-- Host: ${process.env.HOSTNAME || 'Unknown'}
-- Environment: ${process.env.NODE_ENV || 'development'}
-- Node.js Version: ${process.version}
-- Bot Uptime: ${process.uptime()} seconds
-
-Error Details:
-${errorDetails}
-
-The ${serviceName} service has failed. Some bot functionality may be affected.
-
-This is an automated notification from Atom Bot.
-    `.trim();
-
-    return await this.sendNotification(subject, message);
+    // Email notifications are only sent for Discord credential validation failures
+    // Service failure notifications are disabled to reduce email spam
+    logger.info('Service failure notification disabled - email notifications only sent for Discord credential failures');
+    return false;
   }
 
   /**
    * Send database error notification
+   * NOTE: This method is kept for compatibility but notifications are disabled
+   * Email notifications are only sent for Discord credential validation failures
    */
   async sendDatabaseErrorNotification(operation, errorMessage, errorDetails) {
-    const subject = '🗄️ Atom Bot - Database Error';
-    
-    const message = `
-DATABASE ERROR - Atom Bot
-
-Operation: ${operation}
-Error: ${errorMessage}
-Time: ${new Date().toISOString()}
-
-Server Details:
-- Host: ${process.env.HOSTNAME || 'Unknown'}
-- Environment: ${process.env.NODE_ENV || 'development'}
-- Node.js Version: ${process.version}
-- Bot Uptime: ${process.uptime()} seconds
-
-Error Details:
-${errorDetails}
-
-Database operations are failing. This may affect bot functionality significantly.
-
-This is an automated notification from Atom Bot.
-    `.trim();
-
-    return await this.sendNotification(subject, message);
+    // Email notifications are only sent for Discord credential validation failures
+    // Database error notifications are disabled to reduce email spam
+    logger.info('Database error notification disabled - email notifications only sent for Discord credential failures');
+    return false;
   }
 
   /**

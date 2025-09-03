@@ -262,56 +262,14 @@ class HealthMonitor {
 
   /**
    * Send health report via email
+   * NOTE: This method is kept for compatibility but notifications are disabled
+   * Email notifications are only sent for Discord credential validation failures
    */
   async sendHealthReport(healthResults) {
-    if (!emailService.isEmailConfigured()) {
-      return false;
-    }
-
-    try {
-      const subject = `📊 Atom Bot Health Report - ${healthResults.overall.toUpperCase()}`;
-      
-      let message = `
-ATOM BOT HEALTH REPORT
-Generated: ${healthResults.timestamp}
-Overall Status: ${healthResults.overall.toUpperCase()}
-
-SYSTEM HEALTH:
-- Uptime: ${Math.floor(process.uptime() / 3600)} hours
-- Memory Usage: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB
-- Node.js Version: ${process.version}
-- Platform: ${process.platform}
-
-HEALTH CHECKS:
-`;
-
-      for (const [name, check] of Object.entries(healthResults.checks)) {
-        const status = check.status.toUpperCase();
-        const emoji = check.status === 'healthy' ? '✅' : check.status === 'warning' ? '⚠️' : '❌';
-        message += `- ${emoji} ${name}: ${status} - ${check.message}\n`;
-      }
-
-      if (healthResults.criticalIssues.length > 0) {
-        message += `\nCRITICAL ISSUES:\n`;
-        healthResults.criticalIssues.forEach(issue => {
-          message += `- ${issue.check}: ${issue.message}\n`;
-        });
-      }
-
-      if (healthResults.warnings.length > 0) {
-        message += `\nWARNINGS:\n`;
-        healthResults.warnings.forEach(warning => {
-          message += `- ${warning.check}: ${warning.message}\n`;
-        });
-      }
-
-      message += `\nThis is an automated health report from Atom Bot.`;
-
-      return await emailService.sendNotification(subject, message);
-    } catch (error) {
-      logger.error('Failed to send health report:', error);
-      return false;
-    }
+    // Email notifications are only sent for Discord credential validation failures
+    // Health report notifications are disabled to reduce email spam
+    logger.info('Health report notification disabled - email notifications only sent for Discord credential failures');
+    return false;
   }
 
   /**
