@@ -59,7 +59,21 @@ src/
    DISCORD_GUILD_ID=your_guild_id_here  # Optional, for guild-specific commands
    ```
 
-4. **Start the bot**
+4. **Configure Discord Bot Intents**
+   
+   The bot uses basic intents by default. If you need additional functionality, you may need to enable privileged intents in the Discord Developer Portal:
+   
+   - Go to [Discord Developer Portal](https://discord.com/developers/applications)
+   - Select your application
+   - Go to the "Bot" section
+   - Under "Privileged Gateway Intents", enable any of the following if needed:
+     - **Server Members Intent** (for member-related features)
+     - **Message Content Intent** (for reading message content)
+     - **Presence Intent** (for presence-related features)
+   
+   ⚠️ **Note**: The bot is configured to work with basic intents only. Only enable privileged intents if you specifically need them for your bot's functionality.
+
+5. **Start the bot**
    ```bash
    npm start
    ```
