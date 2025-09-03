@@ -27,17 +27,21 @@ export default {
       
       await command.execute(interaction, client);
     } catch (error) {
-      logger.error(`Error executing command ${interaction.commandName}:`, error);
+      logger.critical(`Critical error executing command ${interaction.commandName} - command system failure`, 'interaction-handler', error);
       
       const errorMessage = {
-        content: 'There was an error while executing this command!',
+        content: 'There was a critical error while executing this command! The admin has been notified.',
         flags: MessageFlags.Ephemeral,
       };
 
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(errorMessage);
-      } else {
-        await interaction.reply(errorMessage);
+      try {
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp(errorMessage);
+        } else {
+          await interaction.reply(errorMessage);
+        }
+      } catch (replyError) {
+        logger.critical('Failed to send error response to user - interaction system may be broken', 'interaction-handler', replyError);
       }
     }
   },

@@ -3,6 +3,7 @@ import databaseService from './services/database.js';
 import emailService from './services/email.js';
 import config from './core/config.js';
 import logger from './core/logger.js';
+import healthMonitor from './core/healthMonitor.js';
 
 /**
  * Validate environment variables before starting
@@ -91,6 +92,10 @@ async function main() {
     const client = new BotClient();
     await client.initialize();
 
+    // Initialize health monitoring
+    logger.info('Initializing health monitoring...');
+    await healthMonitor.initialize(client);
+
     // Graceful shutdown handling
     process.on('SIGINT', async () => {
       logger.info('Received SIGINT, shutting down gracefully...');
@@ -104,13 +109,13 @@ async function main() {
 
     // Handle uncaught exceptions
     process.on('uncaughtException', (error) => {
-      logger.error('Uncaught Exception:', error);
+      logger.critical('Uncaught Exception - bot will crash', 'process', error);
       process.exit(1);
     });
 
     // Handle unhandled promise rejections
     process.on('unhandledRejection', (reason, promise) => {
-      logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      logger.critical('Unhandled Promise Rejection - bot will crash', 'process', reason);
       process.exit(1);
     });
 
@@ -127,7 +132,7 @@ async function main() {
       logger.error('Failed to send startup notification:', error);
     }
   } catch (error) {
-    logger.error('Failed to start Atom Bot:', error);
+    logger.critical('Failed to start Atom Bot - startup failure', 'startup', error);
     process.exit(1);
   }
 }
@@ -148,7 +153,7 @@ async function shutdown(client) {
     logger.info('Shutdown completed');
     process.exit(0);
   } catch (error) {
-    logger.error('Error during shutdown:', error);
+    logger.critical('Error during shutdown - graceful shutdown failed', 'shutdown', error);
     process.exit(1);
   }
 }

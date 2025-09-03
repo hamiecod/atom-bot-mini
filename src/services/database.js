@@ -43,7 +43,7 @@ class DatabaseService {
 
       logger.info('Database initialization completed');
     } catch (error) {
-      logger.error('Failed to initialize database:', error);
+      logger.critical('Database initialization failed - bot cannot function without database', 'database', error);
       throw error;
     }
   }
@@ -76,22 +76,87 @@ class DatabaseService {
       `);
 
       // Create settings table for guild-specific configurations
-      await this.db.exec(`
-        CREATE TABLE IF NOT EXISTS guild_settings (
-          id TEXT PRIMARY KEY,
-          guild_id TEXT NOT NULL,
-          setting_key TEXT NOT NULL,
-          setting_value TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(guild_id, setting_key),
-          FOREIGN KEY (guild_id) REFERENCES guilds(discord_id)
-        )
+      // First, check if old schema exists and migrate if needed
+      const oldSchemaExists = await this.db.get(`
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name='guild_settings' AND sql LIKE '%setting_key%'
       `);
+
+      if (oldSchemaExists) {
+        logger.info('Detected old guild_settings schema, migrating...');
+        
+        // Create new table with correct schema
+        await this.db.exec(`
+          CREATE TABLE IF NOT EXISTS guild_settings_new (
+            guild_id TEXT PRIMARY KEY,
+            stats_channel_id TEXT,
+            leaderboard_channel_id TEXT,
+            admin_role_id TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (guild_id) REFERENCES guilds(discord_id)
+          )
+        `);
+
+        // Migrate data from old schema to new schema
+        const oldSettings = await this.db.all(`SELECT * FROM guild_settings`);
+        for (const setting of oldSettings) {
+          const newSettings = {
+            guild_id: setting.guild_id,
+            stats_channel_id: null,
+            leaderboard_channel_id: null,
+            admin_role_id: null,
+            updated_at: setting.updated_at
+          };
+
+          // Map old setting_key values to new columns
+          if (setting.setting_key === 'stats_channel_id') {
+            newSettings.stats_channel_id = setting.setting_value;
+          } else if (setting.setting_key === 'leaderboard_channel_id') {
+            newSettings.leaderboard_channel_id = setting.setting_value;
+          } else if (setting.setting_key === 'admin_role_id') {
+            newSettings.admin_role_id = setting.setting_value;
+          }
+
+          await this.db.run(`
+            INSERT OR REPLACE INTO guild_settings_new 
+            (guild_id, stats_channel_id, leaderboard_channel_id, admin_role_id, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+          `, [newSettings.guild_id, newSettings.stats_channel_id, newSettings.leaderboard_channel_id, newSettings.admin_role_id, newSettings.updated_at]);
+        }
+
+        // Drop old table and rename new table
+        await this.db.exec(`DROP TABLE guild_settings`);
+        await this.db.exec(`ALTER TABLE guild_settings_new RENAME TO guild_settings`);
+        
+        logger.info('Guild settings schema migration completed');
+      } else {
+        // Create new table with correct schema
+        await this.db.exec(`
+          CREATE TABLE IF NOT EXISTS guild_settings (
+            guild_id TEXT PRIMARY KEY,
+            stats_channel_id TEXT,
+            leaderboard_channel_id TEXT,
+            admin_role_id TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (guild_id) REFERENCES guilds(discord_id)
+          )
+        `);
+      }
+
+      // Clean up old unused tables
+      const commandBindingsExists = await this.db.get(`
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name='command_bindings'
+      `);
+      
+      if (commandBindingsExists) {
+        logger.info('Removing unused command_bindings table...');
+        await this.db.exec(`DROP TABLE command_bindings`);
+      }
 
       logger.info('Database migrations completed');
     } catch (error) {
-      logger.error('Failed to run migrations:', error);
+      logger.critical('Database migrations failed - bot cannot function without proper schema', 'database', error);
       throw error;
     }
   }
@@ -114,7 +179,7 @@ class DatabaseService {
       const db = this.getDatabase();
       return await db.all(sql, params);
     } catch (error) {
-      logger.error('Database query error:', error);
+      logger.critical('Database query failed', 'database', error);
       throw error;
     }
   }
@@ -127,7 +192,7 @@ class DatabaseService {
       const db = this.getDatabase();
       return await db.get(sql, params);
     } catch (error) {
-      logger.error('Database query error:', error);
+      logger.critical('Database single query failed', 'database', error);
       throw error;
     }
   }
@@ -141,7 +206,7 @@ class DatabaseService {
       const result = await db.run(sql, params);
       return result;
     } catch (error) {
-      logger.error('Database execute error:', error);
+      logger.critical('Database execute operation failed', 'database', error);
       throw error;
     }
   }

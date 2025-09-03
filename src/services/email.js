@@ -126,6 +126,126 @@ This is an automated notification from Atom Bot.
   }
 
   /**
+   * Send critical error notification
+   */
+  async sendCriticalErrorNotification(errorMessage, context, errorDetails) {
+    const subject = '🚨 Atom Bot - Critical Error Alert';
+    
+    const message = `
+CRITICAL ERROR DETECTED - Atom Bot
+
+Error: ${errorMessage}
+Context: ${context}
+Time: ${new Date().toISOString()}
+
+Server Details:
+- Host: ${process.env.HOSTNAME || 'Unknown'}
+- Environment: ${process.env.NODE_ENV || 'development'}
+- Node.js Version: ${process.version}
+- Bot Uptime: ${process.uptime()} seconds
+
+Error Details:
+${errorDetails}
+
+This requires immediate attention. Please investigate and resolve as soon as possible.
+
+This is an automated notification from Atom Bot.
+    `.trim();
+
+    return await this.sendNotification(subject, message);
+  }
+
+  /**
+   * Send high priority error notification
+   */
+  async sendHighPriorityErrorNotification(errorMessage, context, errorDetails) {
+    const subject = '⚠️ Atom Bot - High Priority Error';
+    
+    const message = `
+HIGH PRIORITY ERROR - Atom Bot
+
+Error: ${errorMessage}
+Context: ${context}
+Time: ${new Date().toISOString()}
+
+Server Details:
+- Host: ${process.env.HOSTNAME || 'Unknown'}
+- Environment: ${process.env.NODE_ENV || 'development'}
+- Node.js Version: ${process.version}
+- Bot Uptime: ${process.uptime()} seconds
+
+Error Details:
+${errorDetails}
+
+This error should be monitored and addressed when possible.
+
+This is an automated notification from Atom Bot.
+    `.trim();
+
+    return await this.sendNotification(subject, message);
+  }
+
+  /**
+   * Send service failure notification
+   */
+  async sendServiceFailureNotification(serviceName, errorMessage, errorDetails) {
+    const subject = `🔧 Atom Bot - ${serviceName} Service Failure`;
+    
+    const message = `
+SERVICE FAILURE - Atom Bot
+
+Service: ${serviceName}
+Error: ${errorMessage}
+Time: ${new Date().toISOString()}
+
+Server Details:
+- Host: ${process.env.HOSTNAME || 'Unknown'}
+- Environment: ${process.env.NODE_ENV || 'development'}
+- Node.js Version: ${process.version}
+- Bot Uptime: ${process.uptime()} seconds
+
+Error Details:
+${errorDetails}
+
+The ${serviceName} service has failed. Some bot functionality may be affected.
+
+This is an automated notification from Atom Bot.
+    `.trim();
+
+    return await this.sendNotification(subject, message);
+  }
+
+  /**
+   * Send database error notification
+   */
+  async sendDatabaseErrorNotification(operation, errorMessage, errorDetails) {
+    const subject = '🗄️ Atom Bot - Database Error';
+    
+    const message = `
+DATABASE ERROR - Atom Bot
+
+Operation: ${operation}
+Error: ${errorMessage}
+Time: ${new Date().toISOString()}
+
+Server Details:
+- Host: ${process.env.HOSTNAME || 'Unknown'}
+- Environment: ${process.env.NODE_ENV || 'development'}
+- Node.js Version: ${process.version}
+- Bot Uptime: ${process.uptime()} seconds
+
+Error Details:
+${errorDetails}
+
+Database operations are failing. This may affect bot functionality significantly.
+
+This is an automated notification from Atom Bot.
+    `.trim();
+
+    return await this.sendNotification(subject, message);
+  }
+
+  /**
    * Check if email service is configured
    */
   isEmailConfigured() {
