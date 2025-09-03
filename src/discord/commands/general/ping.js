@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from 'discord.js';
 import logger from '../../../core/logger.js';
 
 /**
- * Ping command - tests bot responsiveness
+ * Ping-stats command - tests bot responsiveness and shows latency statistics
  */
 export default {
   data: new SlashCommandBuilder()
@@ -25,9 +25,9 @@ export default {
         `💓 WebSocket heartbeat: ${websocketHeartbeat}ms`
       );
 
-      logger.info(`Ping command executed by ${interaction.user.tag}`);
+      logger.info(`Ping-stats command executed by ${interaction.user.tag}`);
     } catch (error) {
-      logger.error('Error in ping command:', error);
+      logger.error('Error in ping-stats command:', error);
       throw error;
     }
   },
