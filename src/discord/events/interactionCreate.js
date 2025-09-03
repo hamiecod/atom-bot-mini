@@ -1,4 +1,4 @@
-import { InteractionResponseFlags } from 'discord.js';
+import { MessageFlags } from 'discord.js';
 import logger from '../../core/logger.js';
 
 /**
@@ -31,7 +31,7 @@ export default {
       
       const errorMessage = {
         content: 'There was an error while executing this command!',
-        flags: InteractionResponseFlags.Ephemeral,
+        flags: MessageFlags.Ephemeral,
       };
 
       if (interaction.replied || interaction.deferred) {
