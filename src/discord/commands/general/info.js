@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, version } from 'discord.js';
 import logger from '../../../core/logger.js';
 import config from '../../../core/config.js';
 
@@ -31,7 +31,7 @@ export default {
             name: '🔧 Technical Details',
             value: [
               `**Node.js:** ${process.version}`,
-              `**Discord.js:** ${require('discord.js').version}`,
+              `**Discord.js:** ${version}`,
               `**Environment:** ${config.app.nodeEnv}`,
               '**Database:** SQLite',
             ].join('\n'),

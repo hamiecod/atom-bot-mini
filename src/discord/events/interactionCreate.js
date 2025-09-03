@@ -1,8 +1,11 @@
+import { InteractionResponseFlags } from 'discord.js';
 import logger from '../../core/logger.js';
 
 /**
  * Interaction create event handler
  * Handles slash command interactions
+ * Fired when someone uses a slash comand
+ * Executes the command with error handling
  */
 export default {
   name: 'interactionCreate',
@@ -28,7 +31,7 @@ export default {
       
       const errorMessage = {
         content: 'There was an error while executing this command!',
-        ephemeral: true,
+        flags: InteractionResponseFlags.Ephemeral,
       };
 
       if (interaction.replied || interaction.deferred) {
